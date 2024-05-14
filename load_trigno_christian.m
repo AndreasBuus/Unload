@@ -1,17 +1,12 @@
 clc; clear; close all;
 
 filefolder = struct;
-filefolder.tigno = "C:/Users/BuusA/Documents/Delsys/Trigno Discover/unload_50and350/andreas/2024-05-01/"; 
+filefolder.tigno = "C:/Users/BuusA/OneDrive/Documents/Delsys/Trigno Discover/Unload/Christian/2024-05-07"; 
+
+filename = "/trial3__"; 
 
 % variables 
 trigno = struct; 
-
-trigno.names.sensors = ["left_foot_QUA", ...
-    "left_ankel_QUA", ... 
-    "left_shoe_IMU", ... 
-    "left_soleus_EMG", ...
-    "left_tibialis_anterior_EMG", ...
-    "head_IMU"]; 
 
 trigno.names.IMU = ["time (s)", "acc x (G)", "acc y (G)", "acc z (G) ", "gyro X (deg/s)", "gyroY (deg/s)", "gyroZ (deg/s)"]; 
 trigno.names.quaternion = ["time (s)", "oriW (Quaternion)", "oriX (Quaternion)", "oriY (Quaternion)","oriZ (Quaternion)" ]; 
@@ -35,21 +30,23 @@ trigno.quat.x = 3;
 trigno.quat.y = 4; 
 trigno.quat.z = 5; 
 
-% Kinomatik sensors
-trigno.left_foot_quaternion = 1; 
-trigno.left_ankel_quaternion = 2; 
-trigno.left_foot_IMU = 3; 
+% sensor names
+trigno.l_sol = 1; 
+trigno.l_ta = 2; 
+trigno.r_sol = 3; 
+trigno.r_ta = 4; 
+trigno.l_shoe = 5; 
+trigno.l_ankel = 6; 
+trigno.l_shoe_imu = 7; 
+trigno.head_imu = 8; 
+trigno.l_qf = 9; 
+trigno.l_bf = 10; 
+trigno.l_thigh = 11; 
 
-% EMG sensors
-trigno.left_soleus = 4; 
-trigno.left_tibialis_anterior = 5; 
 
-% Head sensor
-trigno.head_IMU = 6; 
- 
 % Exclude sweeps;
-sweeps_recorded = 1:121; 
-excluded_sweeps = [12,13,14,15,16,40,72,93, 44,48,103]; 
+sweeps_recorded = 1:103; 
+excluded_sweeps = [21]; 
 sweeps_recorded(excluded_sweeps) = [];
 
 
@@ -61,7 +58,7 @@ for i = 1:length(sweeps_recorded)
     deleteCount = numel(progressMessage) + 1; %         % Determine the number of characters to delete 
     fprintf([repmat('\b', 1, deleteCount) '%s'], progressMessage);
 
-    filenames = "test1__"+sweeps_recorded(i)+"/test1__"+sweeps_recorded(i)+".csv";
+    filenames = filename + sweeps_recorded(i) + filename+sweeps_recorded(i)+".csv";
     filepath = filefolder.tigno + filenames; 
         
     clear  opts
@@ -80,30 +77,34 @@ for i = 1:length(sweeps_recorded)
     clear x_qua y_qua
     x_qua = data(:, 3); 
     y_qua = isnan(x_qua(:,1));     % identify non-nan files
-    trigno.data{i, trigno.left_foot_quaternion}  = data(~y_qua, 1+[2,3,5,7,9]);
-    trigno.data{i, trigno.left_ankel_quaternion} = data(~y_qua, 11+[2,3,5,7,9]);
+    trigno.data{i, trigno.l_shoe}  = data(~y_qua, 9+[2,3,5,7,9]);
+    trigno.data{i, trigno.l_ankel} = data(~y_qua, 19+[2,3,5,7,9]);
+    trigno.data{i, trigno.l_thigh} = data(~y_qua, 57+[2,3,5,7,9]);
 
     % Store IMU
     clear x_imu y_imu
     x_imu = data(:, 21); 
     y_imu = isnan(x_imu(:,1));     % identify non-nan files
-    trigno.data{i, trigno.left_foot_IMU}         = data(~y_imu, 21+[0,1:2:11]);
-    trigno.data{i, trigno.head_IMU}              = data(~y_imu, 37+[0,1:2:11]);
+    trigno.data{i, trigno.l_shoe_imu} = data(~y_imu, 29+[0,1:2:11]);
+    trigno.data{i, trigno.head_imu}   = data(~y_imu, 41+[0,1:2:11]);
 
     % Store EMG data
     clear x_emg y_emg
     x_emg = data(:, 33); 
     y_emg = isnan(x_emg(:,1));     % identify non-nan files
-    trigno.data{i,trigno.left_soleus}            = data(~y_emg, 33+[0,1]); 
-    trigno.data{i,trigno.left_tibialis_anterior} = data(~y_emg, 35+[0,1]); 
+    trigno.data{i,trigno.l_sol} = data(~y_emg, 1+[0,1]); 
+    trigno.data{i,trigno.l_ta}  = data(~y_emg, 3+[0,1]); 
+    trigno.data{i,trigno.r_sol} = data(~y_emg, 5+[0,1]); 
+    trigno.data{i,trigno.r_ta}  = data(~y_emg, 7+[0,1]); 
+    trigno.data{i,trigno.l_qf}  = data(~y_emg, 53+[0,1]); 
+    trigno.data{i,trigno.l_bf}  = data(~y_emg, 55+[0,1]); 
+
 
 end 
+
 deleteCount = numel(progressMessage) + 1; %         % Determine the number of characters to delete 
 fprintf([repmat('\b', 1, deleteCount) '%s'], "done");
 
-
-
-
-save('data_trigno_andreas_121', "trigno")
+save('trigno_christian_data', "trigno")
 
 
